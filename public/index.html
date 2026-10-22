@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Our Museum</title>
+<meta name="theme-color" content="#1b1420">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2726%27%3E🏛️%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js"}}</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="labels"></div>
+
+<!-- landing -->
+<section id="landing" class="overlay">
+  <div class="card landing-card">
+    <div class="brand">Our Museum</div>
+    <p class="sub">Your photos, framed and lit in a quiet museum. Walk it together, from anywhere.</p>
+    <div class="tabs"><button class="tab on" data-tab="create">Create</button><button class="tab" data-tab="join">Join</button></div>
+    <div id="tab-create">
+      <label>Dedication title<input id="c-title" maxlength="40" placeholder="For Emma" value="For Emma"></label>
+      <label>Your words<textarea id="c-msg" maxlength="160" rows="2">Rome, one very fluffy dog, and you. The best days of my life, framed.</textarea></label>
+      <label>Signed<input id="c-from" maxlength="30" placeholder="Luca" value="Luca"></label>
+      <button class="primary" id="btn-create">Create our museum</button>
+    </div>
+    <div id="tab-join" hidden>
+      <label>Museum code<input id="j-code" maxlength="6" placeholder="A1B2C3" style="text-transform:uppercase;letter-spacing:.3em;text-align:center"></label>
+      <button class="primary" id="btn-join">Find museum</button>
+      <div id="recent"></div>
+    </div>
+    <div class="err" id="landing-err"></div>
+  </div>
+</section>
+
+<!-- character picker -->
+<aside id="custom" class="panel right" hidden>
+  <div class="who"><span id="room-badge" class="dot"></span><span id="room-title">Museum</span></div>
+  <h2>Your look</h2>
+  <div class="seg" id="seg-char"><button data-v="kai" class="on">Kai</button><button data-v="mira">Mira</button></div>
+  <div class="seg" id="seg-height"><button data-v="short">Short</button><button data-v="avg" class="on">Average</button><button data-v="tall">Tall</button></div>
+  <div class="tabs small" id="look-tabs"></div>
+  <div class="swatches" id="swatches"></div>
+  <label class="grow">Your name<input id="my-name" maxlength="14" placeholder="Your name"></label>
+  <button class="primary" id="btn-enter">Enter</button>
+  <button class="ghost" id="btn-back">‹ Back</button>
+  <div class="err" id="custom-err"></div>
+</aside>
+<div id="choose" class="choose" hidden>Choose who walks in.</div>
+
+<!-- HUD -->
+<div id="hud" hidden>
+  <div class="chip" id="presence"><span id="pdots"></span><span id="pcount">1 here</span></div>
+  <div class="bar" id="topbar">
+    <button id="b-emoji" title="Emoji">😊</button>
+    <button id="b-chat" title="Chat">💬<i id="chat-badge" hidden></i></button>
+    <button id="b-share" title="Invite">🔗</button>
+    <button id="b-music" title="Music">🔈</button>
+    <button id="b-fs" title="Fullscreen">⛶</button>
+    <button id="b-set" title="Settings">⚙</button>
+  </div>
+  <div id="emoji-tray" hidden></div>
+  <div id="chips"></div>
+  <div id="joy"><div id="knob"></div></div>
+  <button id="act-btn" title="Interact (E)">↑</button>
+  <div id="chat" hidden>
+    <div id="chat-log"></div>
+    <form id="chat-form"><input id="chat-in" maxlength="300" placeholder="Say something…" autocomplete="off"><button>Send</button></form>
+  </div>
+  <div id="toast"></div>
+  <div id="zone"></div>
+</div>
+
+<!-- frame editor -->
+<aside id="editor" class="panel right" hidden>
+  <div class="row"><h2 id="ed-title">Frame</h2><button class="x" id="ed-close">✕</button></div>
+  <div class="drop" id="ed-drop"><div id="ed-thumb"></div><button class="primary" id="ed-upload">＋ Add photo</button><small>JPG / PNG · pick several to fill the next frames</small></div>
+  <input type="file" id="ed-file" accept="image/*" multiple hidden>
+  <h3>Frame</h3><div class="opts" id="ed-style"></div>
+  <h3>Size</h3><div class="opts" id="ed-size"></div>
+  <h3>Decoration</h3><div class="opts" id="ed-deco"></div>
+  <label>Caption<input id="ed-cap" maxlength="80" placeholder="Rome, 2025"></label>
+  <div class="row"><button class="ghost" id="ed-remove">Remove photo</button><button class="ghost danger" id="ed-reset">Reset frame</button></div>
+</aside>
+
+<!-- settings -->
+<aside id="settings" class="panel right" hidden>
+  <div class="row"><h2>Settings</h2><button class="x" id="st-close">✕</button></div>
+  <label>Dedication title<input id="s-title" maxlength="40"></label>
+  <label>Your words<textarea id="s-msg" rows="3" maxlength="160"></textarea></label>
+  <label>Signed<input id="s-from" maxlength="30"></label>
+  <button class="primary" id="s-save">Save dedication</button>
+  <button class="ghost" id="s-look">Change my look</button>
+  <label class="check"><input type="checkbox" id="s-names" checked> Show name tags</label>
+  <div class="muted" id="s-code"></div>
+</aside>
+
+<!-- film controls -->
+<div id="film" class="filmbar" hidden>
+  <button id="f-play" class="primary">▶ Play film</button>
+  <button id="f-stop" class="ghost">■ Stop</button>
+  <button id="f-save" class="ghost">⬇ Save as video</button>
+  <button id="f-video" class="ghost">🎞 Use my own video</button>
+  <button id="f-slides" class="ghost" hidden>Back to photo film</button>
+  <input type="file" id="f-file" accept="video/*" hidden>
+  <span id="f-status"></span>
+</div>
+<script type="module" src="/js/main.js"></script>
+</body>
+</html>
